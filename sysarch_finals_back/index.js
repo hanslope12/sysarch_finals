@@ -6,7 +6,7 @@ const AnimeModel = require('./models/anime')
 const app = express()
 app.use(cors())
 app.use(express.json())
-mongoose.connect("mongodb://localhost:27017/")//insert database name at the end of "27017/"
+mongoose.connect("mongodb://localhost:27017/MyFirstWebApp")//insert database name at the end of "27017/"
 
 app.get('/getAnimes', (req, res)=>{
     AnimeModel.find()
