@@ -217,7 +217,7 @@ app.listen(port, () => {
 priority list, backend
 [✔]1. Mongodb, kaggle dataset, display basic data, animeid, anime name and anime rank
 [✔]2. Jikan, jikan api data, display basic data, animeid, anime name and anime rank
-[-]3. Compare mongodb and jikan data, display.
+[✔]3. Compare mongodb and jikan data, display.
 
 front-end
 1.Get post request from backend
