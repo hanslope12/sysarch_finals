@@ -1,24 +1,14 @@
-const mongoose = require("mongoose")
+const mongoose = require('mongoose');
 
-//connect to your mongodb database
-mongoose.connect("mongodb://localhost:27017/MyFirstWebApp")
-.then(() => {
-    console.log("MONGODB CONNECTED")
-})
-.catch(() => {
-    console.log("MONGODB FAILED TO CONNECTED")
-})
+// Create a schema for the documents
+const animeSchema = new mongoose.Schema({
+  anime_id: Number,
+  Name: String,
+  Genres: String,
+  Ranked: Number,
+});
 
-//create a schema for the documents
-const AnimeSchema = new mongoose.Schema({
-    username : {
-        type : String,
-        required : true
-    },
-    password : {
-        type : String,
-        required : true
-    }
-})
-const AnimeModel = mongoose.model("anime", AnimeSchema)
-module.exports = AnimeModel
+// Explicitly set the collection name
+const Anime = mongoose.model('Anime', animeSchema, 'animelist');
+
+module.exports = Anime;
