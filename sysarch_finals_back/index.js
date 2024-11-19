@@ -144,23 +144,68 @@ app.get('/animescompare', async (req, res) => {
 //comparison
 app.get('/animescomparemal', async (req, res) => {
     try {
-        // Fetch anime data using Axios
+        console.log('Fetching top anime from remote dataset...');
+
+        // Fetch top anime data from the remote API
         const animeResponse = await axios.get(`https://api.jikan.moe/v4/top/anime`);
 
-        // Extract relevant fields and format the response
-        const animeData = animeResponse.data.data.map((anime) => ({
-            anime_id: anime.mal_id,
-            Name: anime.title,
-            Genres: anime.genres.map((genre) => genre.name).join(", "), // Join genres into a string
-            Ranked: anime.rank,
-        }));
+        // Extract relevant data and build an array of mal_ids
+        const topAnimeData = animeResponse.data.data.map((anime) => {
+            const allGenres = [
+                ...anime.genres.map((genre) => genre.name),
+                ...(anime.explicit_genres || []).map((genre) => genre.name),
+                ...(anime.themes || []).map((theme) => theme.name),
+                ...(anime.demographics || []).map((demographic) => demographic.name),
+            ].join(", ");
 
-        res.json(animeData); // Send the formatted JSON
+            return {
+                anime_id: anime.mal_id,
+                Name: anime.title,
+                Genres: allGenres || "N/A",
+                Ranked: anime.rank,
+            };
+        });
+
+        const malIds = topAnimeData.map((anime) => anime.anime_id);
+
+        // Fetch matching animes from local dataset
+        const localAnimes = await Anime.find(
+            { anime_id: { $in: malIds } },
+            { _id: 0, anime_id: 1, Ranked: 1 } // Fetch only relevant fields
+        );
+
+        const localAnimeMap = localAnimes.reduce((acc, anime) => {
+            acc[anime.anime_id] = anime.Ranked;
+            return acc;
+        }, {});
+
+        // Compare and format the response
+        const comparisons = topAnimeData.map((anime) => {
+            const oldRank = localAnimeMap[anime.anime_id];
+            if (oldRank !== undefined) {
+                return {
+                    ...anime,
+                    OldRank: oldRank,
+                    RankDifference: oldRank - anime.Ranked,
+                };
+            } else {
+                return {
+                    ...anime,
+                    Status:"*NEW ANIME*",
+                };
+            }
+        });
+
+        // Sort comparisons by Ranked field in ascending order
+        comparisons.sort((a, b) => a.Ranked - b.Ranked);
+
+        res.json(comparisons);
     } catch (err) {
-        console.error(`Error fetching data:`, err.message);
-        res.status(500).json({ error: 'Failed to fetch and format anime data' });
+        console.error(`Error comparing top anime data:`, err.message);
+        res.status(500).json({ error: 'Failed to fetch and compare anime data' });
     }
 });
+
   
 // Start server
 app.listen(port, () => {
