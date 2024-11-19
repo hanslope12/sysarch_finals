@@ -12,6 +12,12 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 connectDB();
 
+app.get('/getAnime', (req, res) => {
+    Anime.find()
+    .then(Anime => res.json(Anime))
+    .catch(err => res.json(err))
+})
+
 app.use(cors());
 app.use(express.json());
 
