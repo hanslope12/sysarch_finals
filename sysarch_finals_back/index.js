@@ -117,8 +117,8 @@ app.get('/animescompare', async (req, res) => {
                 comparisons.push({
                     anime_id: localAnime.anime_id,
                     Name: localAnime.Name,
-                    LocalRank: localAnime.Ranked,
-                    RemoteRank: remoteAnime.rank,
+                    OldRank: localAnime.Ranked,
+                    NewRank: remoteAnime.rank,
                     RankDifference: (localAnime.Ranked || 0) - (remoteAnime.rank || 0),
                 });
 
@@ -130,7 +130,7 @@ app.get('/animescompare', async (req, res) => {
         }
 
         // Sort the comparisons by LocalRank in ascending order
-        comparisons.sort((a, b) => a.LocalRank - b.LocalRank);
+        comparisons.sort((a, b) => a.OldRank - b.OldRank);
 
         console.log("Comparison results sorted by LocalRank:", comparisons);
 
