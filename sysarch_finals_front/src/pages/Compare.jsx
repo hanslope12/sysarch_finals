@@ -1,7 +1,7 @@
 import {Link} from 'react-router-dom';
 import { Navbar } from './navbar';
 import { useState, useEffect } from 'react'
-import{Table} from './table'
+
 import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -16,9 +16,7 @@ export function Compare(){
 
     return(
         <>
-         
         <Navbar/>
-        <Table></Table>
         <h1>This is the Home page</h1>
         
         </>
