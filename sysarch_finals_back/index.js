@@ -59,7 +59,7 @@ app.get('/animes/:id', async (req, res) => {
     }
 });
 
-//Remote dataset
+//Remote dataset(single)
 app.get('/animesmal/:id', async (req, res) => {
     try {
         const animeId = req.params.id; // Get the ID from the URL parameter

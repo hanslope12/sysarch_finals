@@ -18,7 +18,6 @@ export function Compare(){
         <>
         <Navbar/>
         <h1>This is the Home page</h1>
-        
         </>
     )
 }
