@@ -85,7 +85,7 @@ app.get('/animesmal', async (req, res) => {
 		console.log('Remote dataset fetched and sorted.');
         res.json(AnimeData);
     } catch (err) {
-        console.error("Error fetching top anime data:", err.message);
+        console.error("Error fetching anime data:", err.message);
         res.status(500).json({ error: "Failed to fetch and process anime data" });
     }
 });
