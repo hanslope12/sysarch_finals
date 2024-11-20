@@ -5,6 +5,7 @@ export function Navbar(){
         <>
         <Link to="/">Home </Link>
         <Link to="/Ranking">Ranking</Link>
+        <Link to="/Compare">Compare</Link>
         </>
     )
 }
