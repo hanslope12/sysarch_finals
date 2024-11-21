@@ -40,7 +40,7 @@ app.get('/animes', async (req, res) => {
                     ...anime.toObject(),
                     Image: imageUrl || 'N/A',
                 });
-                await sleep(1500);
+                await sleep(2000);
             } catch (err) {
                 console.error(`Failed to fetch image for anime_id: ${anime.anime_id}`, err.message);
                 animeWithImages.push({
@@ -182,7 +182,7 @@ app.get('/animescompare', async (req, res) => {
                     RankDifference: (localAnime.Ranked || 0) - (remoteAnime.rank || 0),
                     Image: remoteAnime.images.webp.large_image_url || "N/A"
                 });
-                await sleep(1000);
+                await sleep(2000);
             } catch (error) {
                 console.error(`Failed to fetch remote data for anime_id: ${localAnime.anime_id}`, error.message);
             }
