@@ -20,6 +20,7 @@ export function Home(){
         <thead>
           <tr>
             <th>Anime_ID</th>
+            <th>Image</th>
             <th>Name</th>
             <th>Genres</th>
             <th>Ranked</th>
@@ -29,6 +30,7 @@ export function Home(){
           {animeList.map(anime => (
             <tr key={anime.anime_id}>
               <td>{anime.anime_id}</td>
+              <td><img src={anime.Image} alt={anime.anime_id} /></td>
               <td>{anime.Name}</td>
               <td>{anime.Genres}</td>
               <td>{anime.Ranked}</td>

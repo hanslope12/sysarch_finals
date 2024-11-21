@@ -1,5 +1,6 @@
 import {Link} from 'react-router-dom';
 import { Navbar } from './navbar';
+
 export function Ranking(){
     return(
         <>
