@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors  = require('cors');
 const connectDB = require('./mongodb');
-const Anime = require('./models/anime');
 const axios = require('axios');
+const Anime = require('./models/anime');
 
 const app = express();
 const port = 3000;
@@ -15,78 +15,139 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-//Local dataset (all)
+//Local first 25 anime based on id
 app.get('/animes', async (req, res) => {
     try {
-        console.log('Fetching all anime from local dataset...');
-
-        // Fetch all anime entries from the database
-        const animes = await Anime.find({}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 });
-
+        console.log('Fetching the first 25 anime with images from the local dataset...');
+		const animes = await Anime.find({}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 }).limit(25);
+		
         if (!animes || animes.length === 0) {
-            // If no anime is found, return a 404 error
+			console.log('No anime found in the local dataset.');
             return res.status(404).json({ error: 'No anime found in the local dataset.' });
         }
 
-        res.json(animes); // Return all the found anime
+        const animeWithImages = [];
+
+        for (const anime of animes) {
+            try {
+                console.log(`Fetching image for anime_id: ${anime.anime_id}`);
+                
+                const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${anime.anime_id}`);
+                const animeData = animeResponse.data.data;
+                const imageUrl = animeData.images.webp.large_image_url;
+
+                animeWithImages.push({
+                    ...anime.toObject(),
+                    Image: imageUrl || 'N/A',
+                });
+                await sleep(1500);
+            } catch (err) {
+                console.error(`Failed to fetch image for anime_id: ${anime.anime_id}`, err.message);
+                animeWithImages.push({
+                    ...anime.toObject(),
+                    Image: 'N/A',
+                });
+            }
+        }
+		console.log('Anime data with images successfully fetched.');
+        res.json(animeWithImages); 
     } catch (err) {
-        console.error('Error fetching all anime:', err);
-        res.status(500).json({ error: 'Failed to fetch all anime.' });
+        console.error('Error fetching anime:', err);
+        res.status(500).json({ error: 'Failed to fetch anime.' });
     }
 });
 
-//Local dataset (single)
+//MAL first 25 anime based on id
+app.get('/animesmal', async (req, res) => {
+    try {
+        console.log("Fetching top anime from remote dataset...");
+
+        const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime`);
+
+        const AnimeData = animeResponse.data.data.map((anime) => {
+            const allGenres = [
+                ...anime.genres.map((genre) => genre.name),
+                ...(anime.explicit_genres || []).map((genre) => genre.name),
+                ...(anime.themes || []).map((theme) => theme.name),
+                ...(anime.demographics || []).map((demographic) => demographic.name),
+            ].join(", ");
+
+            return {
+                anime_id: anime.mal_id,
+                Name: anime.title,
+                Genres: allGenres || "N/A",
+                Ranked: anime.rank,
+                Image: anime.images.webp.large_image_url || "N/A"
+            };
+        });
+
+        AnimeData.sort((a, b) => a.anime_id - b.anime_id);
+		console.log('Remote dataset fetched and sorted.');
+        res.json(AnimeData);
+    } catch (err) {
+        console.error("Error fetching anime data:", err.message);
+        res.status(500).json({ error: "Failed to fetch and process anime data" });
+    }
+});
+
+//Local anime id search
 app.get('/animes/:id', async (req, res) => {
     try {
-        const animeId = parseInt(req.params.id); // Get the ID from the URL parameter and parse it as an integer
+        const animeId = parseInt(req.params.id);
         console.log(`Fetching local data for anime_id: ${animeId}`);
-
-        // Find the anime with the specific `anime_id`
+        
         const anime = await Anime.findOne(
             { anime_id: animeId },
-            { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 } // Specify the fields to return
+            { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 }
         );
 
         if (!anime) {
-            // If no anime is found, return a 404 error
+			console.log(`Anime with id ${animeId} not found.`);
             return res.status(404).json({ error: `Anime with id ${animeId} not found` });
         }
 
-        res.json(anime); // Return the found anime
+        let imageUrl = 'N/A';
+        try {
+            console.log(`Fetching image for anime_id: ${animeId}`);
+            const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${animeId}`);
+            imageUrl = animeResponse.data.data.images.webp.large_image_url || 'N/A';
+        } catch (err) {
+            console.error(`Failed to fetch image for anime_id ${animeId}:`, err.message);
+        }
+
+		console.log(`Data for anime_id ${animeId} fetched successfully.`);
+        res.json({ ...anime.toObject(), Image: imageUrl });
     } catch (err) {
         console.error(`Error fetching local data for anime_id ${req.params.id}:`, err);
         res.status(500).json({ error: `Failed to fetch data for anime_id ${req.params.id}` });
     }
 });
 
-//Remote dataset(single)
+//MAL anime id search
 app.get('/animesmal/:id', async (req, res) => {
     try {
-        const animeId = req.params.id; // Get the ID from the URL parameter
+        const animeId = req.params.id;
         console.log(`Fetching data for anime_id: ${animeId}`);
 
-        // Fetch anime data using Axios
         const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${animeId}`);
 
-        // Extract relevant fields from the response
-        const animeData = animeResponse.data.data; // Access the actual data property
+        const animeData = animeResponse.data.data;
 
-        // Combine genres, explicit genres, themes, and demographics into a single string
         const allGenres = [
             ...animeData.genres.map((genre) => genre.name),
-            ...animeData.explicit_genres.map((genre) => genre.name),
-            ...animeData.themes.map((theme) => theme.name),
-            ...animeData.demographics.map((demographic) => demographic.name)
+            ...(animeData.explicit_genres || []).map((genre) => genre.name),
+            ...(animeData.themes || []).map((theme) => theme.name),
+            ...(animeData.demographics || []).map((demographic) => demographic.name),
         ].join(", ");
 
-        // Create the response object
         const response = {
             anime_id: animeData.mal_id,
             Name: animeData.title,
             Genres: allGenres || "N/A",
-            Ranked: animeData.rank
+            Ranked: animeData.rank,
+            Image: animeData.images.webp.large_image_url || 'N/A'
         };
-
+		console.log(`Data for anime_id ${animeId} fetched successfully.`);
         res.json(response);
     } catch (err) {
         console.error(`Error fetching data for anime_id ${req.params.id}:`, err.message);
@@ -94,7 +155,7 @@ app.get('/animesmal/:id', async (req, res) => {
     }
 });
 
-//comparison local to remote
+//Local anime ranking vs MAL ranking
 app.get('/animescompare', async (req, res) => {
     try {
         console.log("Fetching local anime data...");
@@ -103,8 +164,7 @@ app.get('/animescompare', async (req, res) => {
             { Ranked: { $lte: 25 } },
             { _id: 0, anime_id: 1, Name: 1, Ranked: 1 }
         );
-
-        console.log("Local anime data:", localAnimes);
+		console.log("Local anime data fetched:", localAnimes);
 
         const comparisons = [];
         for (const localAnime of localAnimes) {
@@ -117,39 +177,35 @@ app.get('/animescompare', async (req, res) => {
                 comparisons.push({
                     anime_id: localAnime.anime_id,
                     Name: localAnime.Name,
-                    LocalRank: localAnime.Ranked,
-                    RemoteRank: remoteAnime.rank,
+                    OldRank: localAnime.Ranked,
+                    NewRank: remoteAnime.rank,
                     RankDifference: (localAnime.Ranked || 0) - (remoteAnime.rank || 0),
+                    Image: remoteAnime.images.webp.large_image_url || "N/A"
                 });
-
-                // Delay to prevent hitting the API rate limit
-                await sleep(1000); // 1 second delay
+                await sleep(1000);
             } catch (error) {
                 console.error(`Failed to fetch remote data for anime_id: ${localAnime.anime_id}`, error.message);
             }
         }
 
-        // Sort the comparisons by LocalRank in ascending order
-        comparisons.sort((a, b) => a.LocalRank - b.LocalRank);
+        comparisons.sort((a, b) => a.OldRank - b.OldRank);
 
         console.log("Comparison results sorted by LocalRank:", comparisons);
 
         res.json(comparisons);
     } catch (err) {
-        console.error('Error comparing anime ranks:', err);
-        res.status(500).json({ error: 'Failed to compare anime ranks' });
+        console.error("Error comparing anime ranks:", err);
+        res.status(500).json({ error: "Failed to compare anime ranks" });
     }
 });
 
-//comparison
+//MAL ranking vs local ranking or new anime
 app.get('/animescomparemal', async (req, res) => {
     try {
-        console.log('Fetching top anime from remote dataset...');
-
-        // Fetch top anime data from the remote API
+        console.log("Fetching top anime from remote dataset...");
+        
         const animeResponse = await axios.get(`https://api.jikan.moe/v4/top/anime`);
 
-        // Extract relevant data and build an array of mal_ids
         const topAnimeData = animeResponse.data.data.map((anime) => {
             const allGenres = [
                 ...anime.genres.map((genre) => genre.name),
@@ -163,15 +219,16 @@ app.get('/animescomparemal', async (req, res) => {
                 Name: anime.title,
                 Genres: allGenres || "N/A",
                 Ranked: anime.rank,
+                Image: anime.images.webp.large_image_url || "N/A",
             };
         });
 
         const malIds = topAnimeData.map((anime) => anime.anime_id);
+		console.log("Fetching matching animes from local dataset...");
 
-        // Fetch matching animes from local dataset
         const localAnimes = await Anime.find(
             { anime_id: { $in: malIds } },
-            { _id: 0, anime_id: 1, Ranked: 1 } // Fetch only relevant fields
+            { _id: 0, anime_id: 1, Ranked: 1 }
         );
 
         const localAnimeMap = localAnimes.reduce((acc, anime) => {
@@ -179,7 +236,6 @@ app.get('/animescomparemal', async (req, res) => {
             return acc;
         }, {});
 
-        // Compare and format the response
         const comparisons = topAnimeData.map((anime) => {
             const oldRank = localAnimeMap[anime.anime_id];
             if (oldRank !== undefined) {
@@ -191,27 +247,24 @@ app.get('/animescomparemal', async (req, res) => {
             } else {
                 return {
                     ...anime,
-                    Status:"*NEW ANIME*",
+                    Status: "*NEW ANIME*",
                 };
             }
         });
 
-        // Sort comparisons by Ranked field in ascending order
         comparisons.sort((a, b) => a.Ranked - b.Ranked);
-
+		console.log("Comparison results sorted:", comparisons);
         res.json(comparisons);
     } catch (err) {
-        console.error(`Error comparing top anime data:`, err.message);
-        res.status(500).json({ error: 'Failed to fetch and compare anime data' });
+        console.error("Error fetching and comparing top anime data:", err.message);
+        res.status(500).json({ error: "Failed to fetch and compare anime data" });
     }
 });
 
-  
-// Start server
+//Server is running on port number
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
 
 /*
 priority list, backend
