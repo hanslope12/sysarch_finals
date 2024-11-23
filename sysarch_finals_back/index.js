@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors  = require('cors');
-const connectDB = require('./mongodb');
 const axios = require('axios');
+const connectDB = require('./mongodb');
 const Anime = require('./models/anime');
 
 const app = express();
@@ -10,47 +10,101 @@ const port = 3000;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+let hasBackgroundUpdateRun = false;
+let hasBackgroundUpdateDosRun = false;
+
 connectDB();
 
 app.use(cors());
 app.use(express.json());
 
+// Helper function to fetch and update the image
+const fetchAndUpdateImage = async (animeId, delay = 2000) => {
+    try {
+        console.log(`Fetching image for anime_id: ${animeId} from Jikan API...`);
+
+        // Delay before making the request
+        await sleep(delay);
+
+        // Fetch data from Jikan API
+        const response = await axios.get(`https://api.jikan.moe/v4/anime/${animeId}`);
+        const imageUrl = response.data.data.images.webp.large_image_url;
+
+        if (imageUrl) {
+            // Update the anime entry in the database with the fetched image URL
+            await Anime.updateOne(
+                { anime_id: animeId },
+                { $set: { Image: imageUrl } }
+            );
+            console.log(`Image updated for anime_id: ${animeId}`);
+            return imageUrl;
+        } else {
+            console.log(`No valid image found for anime_id: ${animeId}`);
+            return 'N/A';
+        }
+    } catch (err) {
+        console.error(`Failed to fetch or update image for anime_id: ${animeId}`, err.message);
+        return 'N/A';
+    }
+};
+
 //Local first 25 anime based on id
 app.get('/animes', async (req, res) => {
     try {
         console.log('Fetching the first 25 anime with images from the local dataset...');
-		const animes = await Anime.find({}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 }).limit(25);
-		
+        const animes = await Anime.find({}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1, Image: 1, isUpdating: 1 }).limit(25);
+
         if (!animes || animes.length === 0) {
-			console.log('No anime found in the local dataset.');
+            console.log('No anime found in the local dataset.');
             return res.status(404).json({ error: 'No anime found in the local dataset.' });
         }
 
-        const animeWithImages = [];
+        const processedAnimes = animes.map((anime) => ({
+            ...anime.toObject(),
+            Image: anime.Image && anime.Image.trim() ? anime.Image : 'N/A',
+        }));
 
-        for (const anime of animes) {
-            try {
-                console.log(`Fetching image for anime_id: ${anime.anime_id}`);
-                
-                const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${anime.anime_id}`);
-                const animeData = animeResponse.data.data;
-                const imageUrl = animeData.images.webp.large_image_url;
+        processedAnimes.sort((a, b) => a.anime_id - b.anime_id);
+        console.log('Anime data fetched and sent to client.');
+        res.json(processedAnimes);
 
-                animeWithImages.push({
-                    ...anime.toObject(),
-                    Image: imageUrl || 'N/A',
-                });
-                await sleep(2000);
-            } catch (err) {
-                console.error(`Failed to fetch image for anime_id: ${anime.anime_id}`, err.message);
-                animeWithImages.push({
-                    ...anime.toObject(),
-                    Image: 'N/A',
-                });
+        if (!hasBackgroundUpdateRun) {
+            console.log('Starting background image update process...');
+            hasBackgroundUpdateRun = true; // Set the flag
+            for (const anime of animes) {
+                try {
+                    const updatedAnime = await Anime.findOneAndUpdate(
+                        { 
+                            anime_id: anime.anime_id, 
+                            isUpdating: { $ne: true }, // Not currently updating
+                            $or: [ // Image is missing or set to 'N/A'
+                                { Image: { $exists: false } }, 
+                                { Image: 'N/A' }
+                            ]
+                        },
+                        { $set: { isUpdating: true } }, // Mark as updating
+                        { new: true } // Return the updated document
+                    );
+                    
+                    if (!updatedAnime) {
+                        console.log(`Skipping anime_id: ${anime.anime_id} as it's either already being updated or doesn't need an update.`);
+                        continue; // Skip this anime
+                    }
+            
+                    console.log(`Updating image for anime_id: ${anime.anime_id}`);
+                    await fetchAndUpdateImage(anime.anime_id);
+            
+                } catch (err) {
+                    console.error(`Failed to update image for anime_id ${anime.anime_id}:`, err.message);
+                } finally {
+                    await Anime.updateOne({ anime_id: anime.anime_id }, { $unset: { isUpdating: "" } });
+                    await sleep(2000); // Prevent API throttling
+                }
             }
+
+            console.log('Background image update process completed.');
+            hasBackgroundUpdateRun = false; // Set the flag
         }
-		console.log('Anime data with images successfully fetched.');
-        res.json(animeWithImages); 
     } catch (err) {
         console.error('Error fetching anime:', err);
         res.status(500).json({ error: 'Failed to fetch anime.' });
@@ -95,29 +149,37 @@ app.get('/animes/:id', async (req, res) => {
     try {
         const animeId = parseInt(req.params.id);
         console.log(`Fetching local data for anime_id: ${animeId}`);
-        
+
         const anime = await Anime.findOne(
             { anime_id: animeId },
-            { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1 }
+            { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1, Image: 1 }
         );
 
         if (!anime) {
-			console.log(`Anime with id ${animeId} not found.`);
+            console.log(`Anime with id ${animeId} not found.`);
             return res.status(404).json({ error: `Anime with id ${animeId} not found` });
         }
 
-        let imageUrl = 'N/A';
-        try {
-            console.log(`Fetching image for anime_id: ${animeId}`);
-            const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${animeId}`);
-            imageUrl = animeResponse.data.data.images.webp.large_image_url || 'N/A';
-        } catch (err) {
-            console.error(`Failed to fetch image for anime_id ${animeId}:`, err.message);
+        if (!anime.Image || anime.Image === 'N/A') {
+            anime.Image = 'N/A';
         }
-
-		console.log(`Data for anime_id ${animeId} fetched successfully.`);
-        res.json({ ...anime.toObject(), Image: imageUrl });
-    } catch (err) {
+		
+        console.log(`Data for anime_id ${animeId} fetched successfully.`);
+        res.json(anime);
+        
+        if (anime.Image === 'N/A' && !hasBackgroundUpdateDosRun) {
+				console.log('Starting background image update process...');
+				hasBackgroundUpdateDosRun = true;
+				try {
+					await fetchAndUpdateImage(anime.anime_id);
+					console.log('Background image update process completed.');
+				} catch (updateError) {
+						console.error(`Error updating image for anime_id ${animeId}:`, updateError);
+				} finally {
+                hasBackgroundUpdateDosRun = false; // Reset flag after update
+            }
+		}
+	} catch (err) {
         console.error(`Error fetching local data for anime_id ${req.params.id}:`, err);
         res.status(500).json({ error: `Failed to fetch data for anime_id ${req.params.id}` });
     }
@@ -182,7 +244,7 @@ app.get('/animescompare', async (req, res) => {
                     RankDifference: (localAnime.Ranked || 0) - (remoteAnime.rank || 0),
                     Image: remoteAnime.images.webp.large_image_url || "N/A"
                 });
-                await sleep(2000);
+                await sleep(1000);
             } catch (error) {
                 console.error(`Failed to fetch remote data for anime_id: ${localAnime.anime_id}`, error.message);
             }
@@ -264,6 +326,73 @@ app.get('/animescomparemal', async (req, res) => {
 //Server is running on port number
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
+});
+
+//Run in postman to update images, while npm start back is running PUT (http://localhost:3000/update-images)
+app.put('/update-images', async (req, res) => {
+    try {
+        console.log('Starting image update process for the first 25 entries by anime_id and Ranked...');
+
+        // Fetch the first 25 entries sorted by anime_id that are missing images
+        const animeById = await Anime.find(
+            { $or: [{ Image: { $exists: false } }, { Image: 'N/A' }] },
+            { anime_id: 1, Name: 1 }
+        )
+            .sort({ anime_id: 1 })
+            .limit(25);
+
+        // Fetch the first 25 entries sorted by Ranked that are missing images
+        const animeByRank = await Anime.find(
+            { $or: [{ Image: { $exists: false } }, { Image: 'N/A' }] },
+            { anime_id: 1, Name: 1 }
+        )
+            .sort({ Ranked: 1 })
+            .limit(25);
+
+        // Combine the two sets of anime entries, ensuring no duplicates
+        const animesToUpdate = [
+            ...new Map([...animeById, ...animeByRank].map((item) => [item.anime_id, item])).values()
+        ];
+
+        if (animesToUpdate.length === 0) {
+            console.log('No anime entries require image updates.');
+            return res.json({ message: 'No anime entries need image updates.' });
+        }
+
+        console.log(`Found ${animesToUpdate.length} anime entries for image updates.`);
+
+        for (const anime of animesToUpdate) {
+            try {
+                console.log(`Fetching image for anime_id: ${anime.anime_id}`);
+                
+                // Fetch the anime data from Jikan API
+                const response = await axios.get(`https://api.jikan.moe/v4/anime/${anime.anime_id}`);
+                const imageUrl = response.data.data.images.webp.large_image_url;
+
+                if (imageUrl) {
+                    // Update the anime entry in the database with the new image URL
+                    await Anime.updateOne(
+                        { anime_id: anime.anime_id },
+                        { $set: { Image: imageUrl } }
+                    );
+                    console.log(`Image updated for anime_id: ${anime.anime_id}`);
+                } else {
+                    console.log(`No valid image found for anime_id: ${anime.anime_id}`);
+                }
+
+                // To avoid hitting the API rate limit, pause for 2 seconds between requests
+                await sleep(2000);
+            } catch (err) {
+                console.error(`Failed to fetch or update image for anime_id: ${anime.anime_id}`, err.message);
+            }
+        }
+
+        console.log('Image update process completed.');
+        res.json({ message: 'Image update process completed.' });
+    } catch (err) {
+        console.error('Error during image update process:', err.message);
+        res.status(500).json({ error: 'Failed to update images in the database.' });
+    }
 });
 
 /*
