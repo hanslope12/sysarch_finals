@@ -1,20 +1,22 @@
 import {Link} from 'react-router-dom';
 import { Navbar } from './navbar';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 export function Home(){
     const [animeList, setAnimeList] = useState([])
-
+   
+  
   useEffect(() => {
     axios.get('http://localhost:3000/animes')
       .then(response => setAnimeList(response.data))
       .catch(err => console.log(err))
   }, [])
-
+  console.log(animeList)
     return(
         <>
+        <TitleBar/>
         <Navbar/>
         <table className="table">
         <thead>

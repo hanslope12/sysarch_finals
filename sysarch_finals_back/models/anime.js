@@ -6,6 +6,7 @@ const animeSchema = new mongoose.Schema({
   Name: String,
   Genres: String,
   Ranked: Number,
+  Image:String
 });
 
 // Explicitly set the collection name

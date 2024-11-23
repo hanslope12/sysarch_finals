@@ -15,7 +15,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-//Local first 25 anime based on id
+//Local first 25 anime based on id **IMPORTANT**
 app.get('/animes', async (req, res) => {
     try {
         console.log('Fetching the first 25 anime with images from the local dataset...');
@@ -27,20 +27,23 @@ app.get('/animes', async (req, res) => {
         }
 
         const animeWithImages = [];
-
+        const animeList = [];
         for (const anime of animes) {
             try {
-                console.log(`Fetching image for anime_id: ${anime.anime_id}`);
-                
-                const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${anime.anime_id}`);
-                const animeData = animeResponse.data.data;
-                const imageUrl = animeData.images.webp.large_image_url;
+                    if(!animeList.includes(anime)){
+                        
+                        const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${anime.anime_id}`);
 
-                animeWithImages.push({
-                    ...anime.toObject(),
-                    Image: imageUrl || 'N/A',
-                });
-                await sleep(1500);
+                        const animeData = animeResponse.data.data;
+                        const imageUrl = animeData.images.webp.large_image_url;
+                        animeWithImages.push({
+                            ...anime.toObject(),
+                            Image: imageUrl || 'N/A',
+                        });
+                        console.log(imageUrl);
+                        animeList.push(anime);
+                        await sleep(1500);
+                    }
             } catch (err) {
                 console.error(`Failed to fetch image for anime_id: ${anime.anime_id}`, err.message);
                 animeWithImages.push({
@@ -50,11 +53,13 @@ app.get('/animes', async (req, res) => {
             }
         }
 		console.log('Anime data with images successfully fetched.');
-        res.json(animeWithImages); 
+        res.json(animeWithImages);
+
     } catch (err) {
         console.error('Error fetching anime:', err);
         res.status(500).json({ error: 'Failed to fetch anime.' });
     }
+
 });
 
 //MAL first 25 anime based on id
