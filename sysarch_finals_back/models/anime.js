@@ -6,6 +6,8 @@ const animeSchema = new mongoose.Schema({
   Name: String,
   Genres: String,
   Ranked: Number,
+  Image: String,
+  isUpdating: { type: Boolean, default: false }, // Temporary flag
 });
 
 // Explicitly set the collection name
