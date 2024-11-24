@@ -21,7 +21,7 @@ app.use(express.json());
 // Helper function to fetch and update the image
 const fetchAndUpdateImage = async (animeId, delay = 2000) => {
     try {
-        console.log(`Fetching image for anime_id: ${animeId} from Jikan API...`);
+        //console.log(`Fetching image for anime_id: ${animeId} from Jikan API...`);
 
         // Delay before making the request
         await sleep(delay);
@@ -36,7 +36,7 @@ const fetchAndUpdateImage = async (animeId, delay = 2000) => {
                 { anime_id: animeId },
                 { $set: { Image: imageUrl } }
             );
-            console.log(`Image updated for anime_id: ${animeId}`);
+            //console.log(`Image updated for anime_id: ${animeId}`);
             return imageUrl;
         } else {
             console.log(`No valid image found for anime_id: ${animeId}`);
@@ -87,11 +87,11 @@ app.get('/animes', async (req, res) => {
                     );
                     
                     if (!updatedAnime) {
-                        console.log(`Skipping anime_id: ${anime.anime_id} as it's either already being updated or doesn't need an update.`);
+                        //console.log(`Skipping anime_id: ${anime.anime_id} as it's either already being updated or doesn't need an update.`);
                         continue; // Skip this anime
                     }
             
-                    console.log(`Updating image for anime_id: ${anime.anime_id}`);
+                    //console.log(`Updating image for anime_id: ${anime.anime_id}`);
                     await fetchAndUpdateImage(anime.anime_id);
             
                 } catch (err) {
@@ -231,7 +231,7 @@ app.get('/animescompare', async (req, res) => {
         const comparisons = [];
         for (const localAnime of localAnimes) {
             try {
-                console.log(`Fetching remote data for anime_id: ${localAnime.anime_id}`);
+                //console.log(`Fetching remote data for anime_id: ${localAnime.anime_id}`);
 
                 const remoteResponse = await axios.get(`https://api.jikan.moe/v4/anime/${localAnime.anime_id}`);
                 const remoteAnime = remoteResponse.data.data;
