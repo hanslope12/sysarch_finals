@@ -11,6 +11,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  max-width: 100%;
 }
 
 a {
@@ -28,12 +33,28 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  max-width: 100%;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+}
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: clamp(1.5rem, 2vw, 3rem);
   line-height: 1.1;
 }
+
+/* ----------------------------------------------------------- */
+/* BUTTONS */
 
 button {
   border-radius: 8px;
@@ -54,6 +75,9 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* ----------------------------------------------------------- */
+/*  */
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -67,11 +91,15 @@ button:focus-visible {
   }
 }
 
+/* ----------------------------------------------------------- */
+/* NAVIGATION */
+
 .navbar-header {
   padding: 20px;
   background-color: #2e51a2;
   color: white;
   text-align: center;
+  max-width: 100%;
 }
 
 .navbar-title {
@@ -89,4 +117,45 @@ button:focus-visible {
 .navbar-link:hover {
   text-decoration: underline;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .navbar-header {
+    max-width: 100%;
+  }
+  th {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------- */
+/* IMAGE */
+
+img {
+  height: 150px;
+}
+@media (max-width: 768px) {
+  img {
+    height: 450px;
+  }
+  table {
+    display: none;
+  }
+}
+
+/* ----------------------------------------------------------- */
+/* TABLE */
+
+.table {
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  table {
+    display: block;
+  }
+  td {
+    display: block;
+    width: 100%;
+  }
 }
