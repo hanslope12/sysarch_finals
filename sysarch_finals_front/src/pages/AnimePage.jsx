@@ -20,7 +20,6 @@ export function AnimePage(){
         <table className="table">
         <thead>
           <tr>
-            <th>Anime_ID</th>
             <th>Image</th>
             <th>Name</th>
             <th>Genres</th>
@@ -30,7 +29,10 @@ export function AnimePage(){
         <tbody>
             <tr key={anime.anime_id}>
               <td><img src={anime.Image} alt={anime.anime_id} /></td>
-              <td>{anime.Name}</td>
+              <td>
+                <h1>{anime.Name}</h1>
+                <p>{anime.Synopsis}</p>
+                </td>
               <td>{anime.Genres}</td>
               <td>{anime.Ranked}</td>
             </tr>
