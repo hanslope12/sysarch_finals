@@ -21,7 +21,7 @@ export function Compare(){
     const fetchComparisonData = async () => {
       try {
         const response = await axios.get('http://localhost:3000/animescompare');
-        console.log('Comparison data:', response.data);  
+       // console.log('Comparison data:', response.data);  
         setComparisons(response.data);  
       } catch (err) {
         setError('Failed to load anime comparison data');
