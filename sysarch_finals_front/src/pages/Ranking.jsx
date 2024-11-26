@@ -5,17 +5,9 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export function Ranking() {
-  const [animeList, setAnimeList] = useState([]);
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Fetch anime list
-  useEffect(() => {
-    axios.get('http://localhost:3000/animes')
-      .then(response => setAnimeList(response.data))
-      .catch(err => console.log(err));
-  }, []);
 
   // Fetch rankings data
   useEffect(() => {
@@ -76,7 +68,7 @@ export function Ranking() {
             rankings.map((ranking, index) => (
               <tr key={ranking.anime_id}>
                 <td>{index + 1}</td> {/* Adjusting to display the correct rank number */}
-                <td>{ranking.Name}</td>
+                <td><Link to={`/animesmal/${ranking.anime_id}`}>{ranking.Name}</Link></td>
                 <td>
                   <img
                     src={ranking.Image === 'N/A' ? 'default-image.jpg' : ranking.Image}

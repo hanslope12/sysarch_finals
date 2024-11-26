@@ -5,16 +5,9 @@ import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 export function Compare(){
-  const [animeList, setAnimeList] = useState([])
   const [comparisons, setComparisons] = useState([]);
   const [loading, setLoading] = useState(true);  
   const [error, setError] = useState(null); 
-
-  useEffect(() => {
-    axios.get('http://localhost:3000/animes')
-      .then(response => setAnimeList(response.data))
-      .catch(err => console.log(err))
-  }, [])
 
   // Fetch comparison data
   useEffect(() => {
@@ -75,7 +68,7 @@ export function Compare(){
           ) : (
             comparisons.map((comparison) => (
               <tr key={comparison.anime_id}>
-                <td>{comparison.Name}</td>
+                <td><Link to={`/animesmal/${comparison.anime_id}`}>{comparison.Name}</Link></td>
                 <td>{comparison.OldRank}</td>
                 <td>{comparison.NewRank}</td>
                 <td>{comparison.RankDifference}</td>
