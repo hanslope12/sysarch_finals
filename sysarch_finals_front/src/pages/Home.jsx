@@ -7,39 +7,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 export function Home(){
     const [animeList, setAnimeList] = useState([])
 
-  useEffect(() => {
-    axios.get('http://localhost:3000/animes')
-      .then(response => setAnimeList(response.data))
-      .catch(err => console.log(err))
-  }, [])
-
     return(
         <>
         <Navbar/>
-        <table className="table">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Genres</th>
-            <th>Ranked</th>
-          </tr>
-        </thead>
-        <tbody>
-          {animeList.map(anime => (
-            <tr key={anime.anime_id}>
-              <td><img src={anime.Image} alt={anime.anime_id} /></td>
-              
-              <td><Link to={`/animesmal/${anime.anime_id}`}>{anime.Name}</Link></td>
-              
-              <td>{anime.Genres}</td>
-              <td>{anime.Ranked}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-        <h1>This is the Home page</h1>
-        
+        <div>
+          <div></div>
+          <div className=''></div>
+        </div>
         </>
     )
 }

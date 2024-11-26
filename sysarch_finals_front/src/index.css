@@ -94,40 +94,6 @@ button:focus-visible {
 /* ----------------------------------------------------------- */
 /* NAVIGATION */
 
-.navbar-header {
-  padding: 20px;
-  background-color: #2e51a2;
-  color: white;
-  text-align: center;
-  max-width: 100%;
-}
-
-.navbar-title {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.navbar-link {
-  margin: 0 15px;
-  color: white;
-  text-decoration: none;
-  font-size: 1.2rem;
-}
-
-.navbar-link:hover {
-  text-decoration: underline;
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .navbar-header {
-    max-width: 100%;
-  }
-  th {
-    display: none;
-  }
-}
-
 /* ----------------------------------------------------------- */
 /* IMAGE */
 

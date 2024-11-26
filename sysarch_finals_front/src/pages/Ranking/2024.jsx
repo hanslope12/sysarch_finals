@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Navbar } from './navbar';
+import { Navbar } from '../navbar';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export function Ranking() {
+export function Ranking2024() {
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

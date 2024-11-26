@@ -184,6 +184,37 @@ app.get('/animes/:id', async (req, res) => {
         res.status(500).json({ error: `Failed to fetch data for anime_id ${req.params.id}` });
     }
 });
+//Mal anime Name search
+app.get('/animesmal/search/:title', async (req, res) => {
+    try {
+        const animeName = req.params.title;
+        console.log(animeName)
+        const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime?q=${animeName}`);
+       const response = animeResponse.data.data.map((anime) => {
+            const allGenres = [
+                ...anime.genres.map((genre) => genre.name),
+                ...(anime.explicit_genres || []).map((genre) => genre.name),
+                ...(anime.themes || []).map((theme) => theme.name),
+                ...(anime.demographics || []).map((demographic) => demographic.name),
+            ].join(", ");
+
+            return {
+            anime_id: anime.mal_id,
+            Name: anime.title,
+            Genres: allGenres || "N/A",
+            Image: anime.images.webp.large_image_url || "N/A",
+            Ranked: anime.rank,
+            Background: anime.background,
+            Synopsis: anime.synopsis
+            };
+        });
+		//console.log(`Data for anime_id ${animeName} fetched successfully.`);
+        res.json(response);
+    } catch (err) {
+        console.error(`Error fetching data for anime_id ${req.params.title}:`, err.message);
+        res.status(500).json({ error: `Failed to fetch data for anime_id ${req.params.title}` });
+    }
+});
 
 //MAL anime id search
 app.get('/animesmal/:id', async (req, res) => {
