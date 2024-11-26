@@ -201,13 +201,15 @@ app.get('/animesmal/:id', async (req, res) => {
             ...(animeData.themes || []).map((theme) => theme.name),
             ...(animeData.demographics || []).map((demographic) => demographic.name),
         ].join(", ");
-
+        console.log(animeData.synopsis)
         const response = {
             anime_id: animeData.mal_id,
             Name: animeData.title,
             Genres: allGenres || "N/A",
             Ranked: animeData.rank,
-            Image: animeData.images.webp.large_image_url || 'N/A'
+            Image: animeData.images.webp.large_image_url || 'N/A',
+            Background: animeData.background,
+            Synopsis: animeData.synopsis
         };
 		console.log(`Data for anime_id ${animeId} fetched successfully.`);
         res.json(response);
