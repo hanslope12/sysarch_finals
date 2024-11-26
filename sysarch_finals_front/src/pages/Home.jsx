@@ -19,7 +19,6 @@ export function Home(){
         <table className="table">
         <thead>
           <tr>
-            <th>Anime_ID</th>
             <th>Image</th>
             <th>Name</th>
             <th>Genres</th>

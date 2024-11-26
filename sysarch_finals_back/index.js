@@ -48,11 +48,11 @@ const fetchAndUpdateImage = async (animeId, delay = 2000) => {
     }
 };
 
-//Local first 25 anime based on id
+//Local first 25 anime based on rank
 app.get('/animes', async (req, res) => {
     try {
         console.log('Fetching the first 25 anime with images from the local dataset...');
-        const animes = await Anime.find({}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Ranked: 1, Image: 1, isUpdating: 1 }).limit(25);
+        const animes = await Anime.find({Ranked:{$lte:25}}, { _id: 0, anime_id: 1, Name: 1, Genres: 1, Image: 1,Ranked:1, isUpdating: 1 });
 
         if (!animes || animes.length === 0) {
             console.log('No anime found in the local dataset.');
@@ -64,7 +64,7 @@ app.get('/animes', async (req, res) => {
             Image: anime.Image && anime.Image.trim() ? anime.Image : 'N/A',
         }));
 
-        processedAnimes.sort((a, b) => a.anime_id - b.anime_id);
+        processedAnimes.sort((a, b) => a.Ranked - b.Ranked);
         console.log('Anime data fetched and sent to client.');
         res.json(processedAnimes);
 
@@ -95,9 +95,9 @@ app.get('/animes', async (req, res) => {
                     await fetchAndUpdateImage(anime.anime_id);
             
                 } catch (err) {
-                    console.error(`Failed to update image for anime_id ${anime.anime_id}:`, err.message);
+                    console.error(`Failed to update image for anime_id ${anime.Ranked}:`, err.message);
                 } finally {
-                    await Anime.updateOne({ anime_id: anime.anime_id }, { $unset: { isUpdating: "" } });
+                    await Anime.updateOne({ anime_id: anime.Ranked }, { $unset: { isUpdating: "" } });
                     await sleep(2000); // Prevent API throttling
                 }
             }
