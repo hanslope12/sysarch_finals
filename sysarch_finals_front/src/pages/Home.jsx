@@ -151,7 +151,7 @@ export function Home() {
                     </div>
                 </div>
             </div>
-            <div><h2>Anime and Manga News</h2></div>
+            <div ><h2>Anime and Manga News</h2></div>
             <div>
                 <ol>
                     <li>

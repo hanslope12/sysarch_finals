@@ -31,7 +31,15 @@ export function Ranking2023() {
     return (
       <div>
         <Navbar />
-        <h1>Loading rankings...</h1>
+        <div class="sharingon">
+          <div class="ring">
+          <div class="to"></div>
+          <div class="to"></div>
+          <div class="to"></div>
+          <div class="circle"></div>
+          </div>
+        </div>
+        <p id='loading-txt'>Loading..</p>
       </div>
     );
   }
