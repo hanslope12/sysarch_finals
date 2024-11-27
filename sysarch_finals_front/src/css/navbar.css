@@ -32,6 +32,9 @@
     th {
       display: none;
     }
+    .search-bar {
+      padding-left: 1rem;
+    }
   }
 
    .search-bar {

@@ -52,7 +52,7 @@ export function Home() {
         <>
             <Navbar />
             <div className="container mt-4">
-                <h3>Animes</h3>
+                <h3  className='new-title'>Animes</h3>
                 <div className="d-flex align-items-center mt-3">
                     {/* Left Arrow */}
                     <FaArrowLeft
@@ -66,7 +66,7 @@ export function Home() {
                         style={{
                             width: '100%',
                             overflow: 'hidden',
-                            gap: '5x',
+                            gap: '2x',
                             whiteSpace: 'nowrap',
                         }}
                     >
@@ -75,7 +75,7 @@ export function Home() {
                                 key={index}
                                 className="card"
                                 style={{
-                                    width: '200px',
+                                    width: '150px',
                                     textAlign: 'center',
                                     flexShrink: 0,
                                 }}
@@ -103,7 +103,7 @@ export function Home() {
 
                 {/* Top Anime 2023 */}
                 <div className="mt-5">
-                    <h3>Last Year's Top Anime</h3>
+                    <h3 className='news-title'>Last Year's Top Anime</h3>
                     <div className="card" style={{ maxWidth: '400px', margin: 'auto' }}>
                         <div className="">
                             <h5 className="mb-0">Top Anime (2023)</h5>
@@ -128,7 +128,7 @@ export function Home() {
 
                 {/* Top Anime 2024 */}
                 <div className="mt-5">
-                    <h3>This Year's Top Anime</h3>
+                    <h3 className='news-title'>This Year's Top Anime</h3>
                     <div className="card" style={{ maxWidth: '400px', margin: 'auto' }}>
                         <div className="">
                             <h5 className="mb-0">Top Anime (2024)</h5>
@@ -151,7 +151,7 @@ export function Home() {
                     </div>
                 </div>
             </div>
-            <div ><h2>Anime and Manga News</h2></div>
+            <div ><h2 className='news-title'>Anime and Manga News</h2></div>
             <div>
                 <ol>
                     <li>
