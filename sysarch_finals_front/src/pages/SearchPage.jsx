@@ -3,9 +3,9 @@ import { Navbar } from './navbar';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
-
-
+//need to reload page when search is pressed
 export function SearchPage(){
+
     const [anime, setAnime] = useState([])
     const {title} = useParams();
   useEffect(() => {
@@ -13,7 +13,6 @@ export function SearchPage(){
       .then(response => setAnime(response.data))
       .catch(err => console.log(err))
   }, [])
-
     return(
         <>
         <Navbar/>
@@ -31,7 +30,7 @@ export function SearchPage(){
             <tr key={anime.anime_id}>
               <td><img src={anime.Image} alt={anime.anime_id} /></td>
               <td>
-                <h1>{anime.Name}</h1>
+                <h1><Link to={`/animesmal/${anime.anime_id}`}>{anime.Name}</Link>p</h1>
                 <p>{anime.Synopsis}</p>
                 </td>
               <td>{anime.Genres}</td>
@@ -40,8 +39,6 @@ export function SearchPage(){
         ))}
         </tbody>
       </table>
-        <h1>This is the Home page</h1>
-        
         </>
     )
 }

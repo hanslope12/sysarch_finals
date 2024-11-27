@@ -1,4 +1,4 @@
-import {Link, useParams} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 import { Navbar } from './navbar';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
@@ -32,14 +32,13 @@ export function AnimePage(){
               <td>
                 <h1>{anime.Name}</h1>
                 <p>{anime.Synopsis}</p>
+                <h1>{anime.Season}</h1>
                 </td>
               <td>{anime.Genres}</td>
               <td>{anime.Ranked}</td>
             </tr>
         </tbody>
-      </table>
-        <h1>This is the Home page</h1>
-        
+      </table>    
         </>
     )
 }

@@ -84,7 +84,6 @@ export function Compare(){
           )}
         </tbody>
       </table>
-      <h1>This is the Compare page</h1>
     </>
   );
 }

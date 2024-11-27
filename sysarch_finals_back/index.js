@@ -204,8 +204,6 @@ app.get('/animesmal/search/:title', async (req, res) => {
             Genres: allGenres || "N/A",
             Image: anime.images.webp.large_image_url || "N/A",
             Ranked: anime.rank,
-            Background: anime.background,
-            Synopsis: anime.synopsis
             };
         });
 		//console.log(`Data for anime_id ${animeName} fetched successfully.`);
@@ -223,7 +221,6 @@ app.get('/animesmal/:id', async (req, res) => {
         console.log(`Fetching data for anime_id: ${animeId}`);
 
         const animeResponse = await axios.get(`https://api.jikan.moe/v4/anime/${animeId}`);
-
         const animeData = animeResponse.data.data;
 
         const allGenres = [
@@ -237,6 +234,9 @@ app.get('/animesmal/:id', async (req, res) => {
             anime_id: animeData.mal_id,
             Name: animeData.title,
             Genres: allGenres || "N/A",
+            Eng_Name: animeData.title_english,
+            Studios:animeData.studios,
+            Season:animeData.season,
             Ranked: animeData.rank,
             Image: animeData.images.webp.large_image_url || 'N/A',
             Background: animeData.background,
@@ -350,6 +350,36 @@ app.get('/animescomparemal', async (req, res) => {
         comparisons.sort((a, b) => a.Ranked - b.Ranked);
 		console.log("Comparison results sorted:", comparisons);
         res.json(comparisons);
+    } catch (err) {
+        console.error("Error fetching and comparing top anime data:", err.message);
+        res.status(500).json({ error: "Failed to fetch and compare anime data" });
+    }
+});
+
+app.get('/topanimes', async (req, res) => {
+    try {
+        console.log("Fetching top anime from remote dataset...");
+        
+        const animeResponse = await axios.get(`https://api.jikan.moe/v4/top/anime`);
+        console.log(animeResponse.data.data)
+       const response = animeResponse.data.data.map((anime) => {
+            const allGenres = [
+                ...anime.genres.map((genre) => genre.name),
+                ...(anime.explicit_genres || []).map((genre) => genre.name),
+                ...(anime.themes || []).map((theme) => theme.name),
+                ...(anime.demographics || []).map((demographic) => demographic.name),
+            ].join(", ");
+
+            return {
+            anime_id: anime.mal_id,
+            Name: anime.title,
+            Genres: allGenres || "N/A",
+            Image: anime.images.webp.large_image_url || "N/A",
+            Ranked: anime.rank,
+            };
+        });
+
+        res.json(response);
     } catch (err) {
         console.error("Error fetching and comparing top anime data:", err.message);
         res.status(500).json({ error: "Failed to fetch and compare anime data" });

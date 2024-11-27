@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams,useNavigate } from 'react-router-dom';
 import { Navbar } from '../navbar';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -8,14 +8,13 @@ export function Ranking2024() {
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   // Fetch rankings data
   useEffect(() => {
     const fetchRankingData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/animescomparemal');
-        console.log('Rankings data: ', response.data);
+        const response = await axios.get('http://localhost:3000/topanimes');
         setRankings(response.data);
+        
       } catch (err) {
         setError('Failed to load anime rankings');
         console.error(err);
@@ -25,7 +24,7 @@ export function Ranking2024() {
     };
     fetchRankingData();
   }, []);
-
+  
   // loading message
   if (loading) {
     return (
