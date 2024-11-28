@@ -5,7 +5,7 @@ import axios from 'axios'
 import 'bootstrap/dist/css/bootstrap.min.css'
 //need to reload page when search is pressed
 export function SearchPage(){
-
+    
     const [anime, setAnime] = useState([])
     const {title} = useParams();
   useEffect(() => {
@@ -30,7 +30,7 @@ export function SearchPage(){
             <tr key={anime.anime_id}>
               <td><img src={anime.Image} alt={anime.anime_id} /></td>
               <td>
-                <h1><Link to={`/animesmal/${anime.anime_id}`}>{anime.Name}</Link>p</h1>
+                <h1><Link to={`/animesmal/${anime.anime_id}`}>{anime.Name}</Link></h1>
                 <p>{anime.Synopsis}</p>
                 </td>
               <td>{anime.Genres}</td>
