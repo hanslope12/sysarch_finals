@@ -31,12 +31,12 @@ export function Compare(){
     return (
       <div>
         <Navbar />
-        <div class="sharingon">
-          <div class="ring">
-          <div class="to"></div>
-          <div class="to"></div>
-          <div class="to"></div>
-          <div class="circle"></div>
+        <div className="sharingon">
+          <div className="ring">
+          <div className="to"></div>
+          <div className="to"></div>
+          <div className="to"></div>
+          <div className="circle"></div>
           </div>
         </div>
         <p id='loading-txt'>Loading..</p>

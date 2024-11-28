@@ -87,7 +87,9 @@ export function Home() {
                                     style={{ height: '150px', objectFit: 'cover' }}
                                 />
                                 <div className="card-body">
-                                    <h6 className="card-title">{anime.Name}</h6>
+                                    <h6 className="card-title">
+                                    <Link to={`/animesmal/${anime.anime_id}`}>{anime.Name}</Link>
+                                        </h6>
                                 </div>
                             </div>
                         ))}
@@ -106,10 +108,10 @@ export function Home() {
                     <h3 className='news-title'>Last Year's Top Anime</h3>
                     <div className="card" style={{ maxWidth: '400px', margin: 'auto' }}>
                         <div className="">
-                            <h5 className="mb-0">Top Anime (2023)</h5>
-                            <Link to="./Ranking/2023" className="btn btn-primary">
-                                View 2023 Ranking
-                            </Link>
+                            <h5 className="mb-0">Top Anime (2023)<Link to="./Ranking/2023" className='float-right ms-auto'>
+                                View
+                            </Link></h5>
+                            
                         </div>
                         <ul className="list-group list-group-flush">
                             {topAiring.map((anime, index) => (
@@ -118,7 +120,8 @@ export function Home() {
                                     className="list-group-item d-flex justify-content-between align-items-start"
                                 >
                                     <div className="ms-2 me-auto">
-                                        <div className="fw-bold">{`${index + 1}. ${anime.Name}`}</div>
+                                        <div className="fw-bold"><Link to={`/animesmal/${anime.anime_id}`}>{`${index + 1}. ${anime.Name}`}
+                                        </Link></div>
                                     </div>
                                 </li>
                             ))}
@@ -131,10 +134,10 @@ export function Home() {
                     <h3 className='news-title'>This Year's Top Anime</h3>
                     <div className="card" style={{ maxWidth: '400px', margin: 'auto' }}>
                         <div className="">
-                            <h5 className="mb-0">Top Anime (2024)</h5>
-                            <Link to="./Ranking/2024" className="btn btn-primary">
-                                View 2024 Ranking
-                            </Link>
+                            <h5 className="mb-0">Top Anime (2024)<Link to="./Ranking/2024" className='float-right'>
+                                View
+                            </Link></h5>
+                            
                         </div>
                         <ul className="list-group list-group-flush">
                             {animeComparison.map((anime, index) => (
@@ -143,7 +146,8 @@ export function Home() {
                                     className="list-group-item d-flex justify-content-between align-items-start"
                                 >
                                     <div className="ms-2 me-auto">
-                                        <div className="fw-bold">{`${index + 1}. ${anime.Name}`}</div>
+                                        <div className="fw-bold"><Link to={`/animesmal/${anime.anime_id}`}>{`${index + 1}. ${anime.Name}`}
+                                        </Link></div>
                                     </div>
                                 </li>
                             ))}
